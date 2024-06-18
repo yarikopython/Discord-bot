@@ -10,7 +10,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 def achieve_percent(appid):
-    link = f"http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid=427520&format=json"
+    link = f"http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid={appid}&format=json"
     response = requests.get(url=link)
     return response.json()
 
@@ -41,6 +41,17 @@ def get_player_recently_games(key, steamid, count):
 
 def get_owned_games(key, steamid):
     link = f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={key}&steamid={steam_id}&format=json"
+    response = requests.get(url=link)
+    return response.json()
+
+def get_user_stats_for_game(key, steamid):
+    link = f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={key}&steamid={steamid}&format=json"
+    response = requests.get(url=link)
+    return response.json()
+
+
+def get_app_details(appid):
+    link = f"https://store.steampowered.com/api/appdetails?appids={appid}"
     response = requests.get(url=link)
     return response.json()
 
@@ -75,11 +86,21 @@ async def achieve(ctx, key, steamid, appid):
 @bot.command()
 async def owned_games(ctx, key, steamid):
     data = get_owned_games(key, steamid)
+    
+    games = data["response"]["games"]
+    games_count = data["response"]["game_count"]
+    details = []
+    for x in range(int(games_count)):
+        details.append(get_app_details(games[x][])["data"]["name"])
 
+    ctx.send(details)
 
 @bot.command()
-async def percent_of_achieve(ctx, appid):
-    data = get_global_achieve(appid)
+async def percent_of_achieve(ctx, appid, achieve_num):
+    data = achieve_percent(appid)
+    ctx.send(data["achievements"][achieve_num]["percent"])
+
+
 
 #print(get_player_achieve(steam_key, steam_id, app_id))
 #print(get_owned_games(steam_key, steam_id))
